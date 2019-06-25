@@ -17,6 +17,7 @@ namespace CoreApp
         public static void Main(string[] args)
         {
             var host = BuildWebHost(args);
+            // is it just to seed initial DB data? 
             using (var scope = host.Services.CreateScope())
             {
                 Task t;
