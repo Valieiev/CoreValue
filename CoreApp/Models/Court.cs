@@ -10,6 +10,7 @@ namespace CoreApp.Models
 {
     public class Court
     {
+        //it's extremely rare case when Id is a string... why? 
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public string Id { get; set; }

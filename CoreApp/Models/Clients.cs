@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace CoreApp.Models
 {
+    //should be singluar - Client, not plural
     public class Clients
     {
         [Key]

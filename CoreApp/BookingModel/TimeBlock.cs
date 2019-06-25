@@ -12,8 +12,11 @@ namespace CoreApp.BookingModel
         public DateTime Start { get; set; }
         public DateTime End { get; set; }
 
+        // I spend time trying to understand what this function does. 
+        // Better comment code or change name - Normalize to general
         public static DateTime NormalizeDateTime(DateTime original, DateTime timeBlock)
         {
+            // if you return it as a result of the function call - you may name it "result"
             var dateTime = original.Date;
             int hour;
             int minute;

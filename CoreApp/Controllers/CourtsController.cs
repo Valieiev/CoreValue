@@ -27,6 +27,8 @@ namespace CoreApp.Controllers
         private CalendarService calendarservice;
         public CourtsController(ApplicationDbContext context)
         {
+            // this will be executed with every request... it doesn't make sense to re-read this file with every request
+            // it should be a configuration parameter
             _context = context;
             using (var stream =
                 new FileStream("client_secret.json", FileMode.Open, FileAccess.Read))
@@ -62,6 +64,7 @@ namespace CoreApp.Controllers
         // GET: Courts/Details/5
         public async Task<IActionResult> Details(string id)
         {
+            // typically string.IsNullOrEmpty()
             if (id == null)
             {
                 return NotFound();
@@ -94,12 +97,15 @@ namespace CoreApp.Controllers
             if (ModelState.IsValid)
             {
 
-                Calendar cal = new Calendar();
-                cal.Summary = court.Summary;
-                cal.Location = court.Location;
-                cal.Description = court.Description;
+                var cal = new Calendar
+                {
+                    Summary = court.Summary,
+                    Location = court.Location,
+                    Description = court.Description
+                };
                 CalendarsResource.InsertRequest addCalendar = calendarservice.Calendars.Insert(cal);
                 addCalendar.Execute();
+                //wow...
                 var calendars = calendarservice.CalendarList.List().Execute().Items;
                 var createdCalendar = calendars.Where(c => c.Summary == court.Summary).FirstOrDefault();
 
