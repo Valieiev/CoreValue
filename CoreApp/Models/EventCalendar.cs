@@ -8,24 +8,33 @@ using Google.Apis.Calendar.v3.Data;
 
 namespace CoreApp.Models
 {
-    public class EventCalendar : Event
+    public class EventCalendar
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public string Id { get; set; }
-        public string calendarId { get; set; }
+        public  string Id { get; set; }
         public string Summary { get; set; }
         public string Location { get; set; }
         public string Description { get; set; }
         public EventDateTime Start { get; set; }
         public EventDateTime End { get; set; }
         public EventAttendee[] Attendees { get; set; }
-        public EventReminder Reminder { get; set; }
+        public Event.RemindersData Reminders { get; set; }
+        public string Transparency { get; set; }
 
         public EventCalendar()
         {
-            Start = new EventDateTime();
-            End = new EventDateTime();
+            Start = new EventDateTime() {TimeZone = "Europe/Kiev"};
+            End = new EventDateTime() { TimeZone = "Europe/Kiev" };
+            Attendees = new EventAttendee[] {new EventAttendee() {Email = "waynelaren@gmail.com"}};
+            Reminders = new Event.RemindersData()
+            {
+                UseDefault = false,
+                Overrides = new EventReminder[]
+                {
+                    new EventReminder() {Method = "email", Minutes = 24 * 60},
+                    new EventReminder() {Method = "sms", Minutes = 10},
+                }
+            };
+            Transparency = "opaque";
         }
     }
     

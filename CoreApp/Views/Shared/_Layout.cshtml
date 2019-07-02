@@ -38,7 +38,16 @@
                                 <a class="nav-link text-dark" style=" font-weight:bold; " asp-area="" asp-controller="Admin" asp-action="Index">Admin panel</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark"   asp-area="" asp-controller="Courts" asp-action="Index">Court panel</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Courts" asp-action="Index">Court panel</a>
+                            </li>
+                        }
+                        @if (User.IsInRole("manager"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Courts" asp-action="Index">Event panel</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Clients" asp-action="Index">Clients panel</a>
                             </li>
                         }
                     </ul>

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Threading;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
@@ -9,14 +11,43 @@ using Microsoft.EntityFrameworkCore;
 using CoreApp.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using AutoMapper;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Calendar.v3;
+using Google.Apis.Services;
+using Google.Apis.Util.Store;
 
 namespace CoreApp
 {
     public class Startup
     {
+        static string[] Scopes = { CalendarService.Scope.Calendar };
+        public static UserCredential credential;
+        public static CalendarService calendarservice;
+
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            using (var stream =
+                new FileStream("client_secret_new.json", FileMode.Open, FileAccess.Read))
+            {
+                // The file token.json stores the user's access and refresh tokens, and is created
+                // automatically when the authorization flow completes for the first time.
+                string credPath = "token.json";
+                credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
+                    GoogleClientSecrets.Load(stream).Secrets,
+                    Scopes,
+                    "user",
+                    CancellationToken.None,
+                    new FileDataStore(credPath, true)).Result;
+            }
+            calendarservice = new CalendarService(new BaseClientService.Initializer
+            {
+                HttpClientInitializer = credential,
+                ApplicationName = "Discovery Sample",
+                ApiKey = "AIzaSyC2i4IHvczd-5UbhZ4g3DEa-RQrCb126yk",
+            });
         }
 
         public IConfiguration Configuration { get; }
@@ -25,13 +56,23 @@ namespace CoreApp
         public void ConfigureServices(IServiceCollection services)
         {
 
+            var mappingConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new MappingProfile());
+            });
+
+            IMapper mapper = mappingConfig.CreateMapper();
+            services.AddSingleton(mapper);
+
+            services.AddMvc();
+
             services.Configure<CookiePolicyOptions>(options =>
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
-
+       
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));

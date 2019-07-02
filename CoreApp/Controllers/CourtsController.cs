@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -15,51 +16,34 @@ using Google.Apis.Calendar.v3.Data;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Formatters.Internal;
 
 namespace CoreApp.Controllers
 {
-    [Authorize(Roles = "admin")]
+    
     public class CourtsController : Controller
     {
-        private readonly ApplicationDbContext _context;
-        static string[] Scopes = { CalendarService.Scope.Calendar };
-        public static UserCredential credential;
-        private CalendarService calendarservice;
-        public CourtsController(ApplicationDbContext context)
+
+        private readonly IMapper _mapper;
+
+        CalendarAPI api = new CalendarAPI();
+
+        public CourtsController( IMapper mapper)
         {
-            _context = context;
-            using (var stream =
-                new FileStream("client_secret.json", FileMode.Open, FileAccess.Read))
-            {
-                // The file token.json stores the user's access and refresh tokens, and is created
-                // automatically when the authorization flow completes for the first time.
-                string credPath = "token.json";
-                credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    GoogleClientSecrets.Load(stream).Secrets,
-                    Scopes,
-                    "user",
-                    CancellationToken.None,
-                    new FileDataStore(credPath, true)).Result;
-            }
-            calendarservice = new CalendarService(new BaseClientService.Initializer
-            {
-                HttpClientInitializer = credential,
-                ApplicationName = "Discovery Sample",
-                ApiKey = "AIzaSyCR8ALHcc9MtSPz7tUKeANByRCu9qAz1gA",
-            });
-
-
-
+            _mapper = mapper;
 
         }
 
         // GET: Courts
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Court.ToListAsync());
+            var list = api.GetCalendars();
+            var model = _mapper.Map<IList<Court>>(list);
+            return View(model);
         }
 
         // GET: Courts/Details/5
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> Details(string id)
         {
             if (id == null)
@@ -67,17 +51,18 @@ namespace CoreApp.Controllers
                 return NotFound();
             }
 
-            var court = await _context.Court
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var court = api.GetCalendarById(id);
+            var item = _mapper.Map<Court>(court);
             if (court == null)
             {
                 return NotFound();
             }
 
-            return View(court);
+            return View(item);
         }
 
         // GET: Courts/Create
+        [Authorize(Roles = "admin")]
         public IActionResult Create()
         {
             return View();
@@ -94,51 +79,8 @@ namespace CoreApp.Controllers
             if (ModelState.IsValid)
             {
 
-                Calendar cal = new Calendar();
-                cal.Summary = court.Summary;
-                cal.Location = court.Location;
-                cal.Description = court.Description;
-                CalendarsResource.InsertRequest addCalendar = calendarservice.Calendars.Insert(cal);
-                addCalendar.Execute();
-                var calendars = calendarservice.CalendarList.List().Execute().Items;
-                var createdCalendar = calendars.Where(c => c.Summary == court.Summary).FirstOrDefault();
-
-                court.Id =  createdCalendar.Id;
-                _context.Add(court);
-                await _context.SaveChangesAsync();
-
-                //Event newEvent = new Event()
-                //{
-                //    Summary = "Google I/O 2015",
-                //    Location = "800 Howard St., San Francisco, CA 94103",
-                //    Description = "A chance to hear more about Google's developer products.",
-                //    Start = new EventDateTime()
-                //    {
-                //        DateTime = DateTime.Parse("2019-06-24T18:00:00-07:00"),
-                //        TimeZone = "Europe/Kiev",
-                //    },
-                //    End = new EventDateTime()
-                //    {
-                //        DateTime = DateTime.Parse("2019-06-24T19:00:00-07:00"),
-                //        TimeZone = "Europe/Kiev",
-                //    },
-                //    Recurrence = new String[] { "RRULE:FREQ=DAILY;COUNT=2" },
-                //    Attendees = new EventAttendee[] {
-                //        new EventAttendee() { Email = "waynelaren@gmail.com" },
-                //        new EventAttendee() { Email = "sbrin@example.com" },
-                //    },
-                //    Reminders = new Event.RemindersData()
-                //    {
-                //        UseDefault = false,
-                //        Overrides = new EventReminder[] {
-                //            new EventReminder() { Method = "email", Minutes = 24 * 60 },
-                //            new EventReminder() { Method = "sms", Minutes = 10 },
-                //        }
-                //    }
-                //};
-
-                //EventsResource.InsertRequest request = calendarservice.Events.Insert(newEvent, createdCalendar.Id);
-                //request.Execute();
+                Calendar cal = _mapper.Map<Calendar>(court);
+                api.CreateCalendar(cal);
 
                 return RedirectToAction(nameof(Index));
             }
@@ -146,6 +88,7 @@ namespace CoreApp.Controllers
         }
 
         // GET: Courts/Edit/5
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> Edit(string id)
         {
             if (id == null)
@@ -153,13 +96,14 @@ namespace CoreApp.Controllers
                 return NotFound();
             }
 
-            var court = await _context.Court.FindAsync(id);
-            
+            var court = api.GetCalendarById(id);
+            var item = _mapper.Map<Court>(court);
+
             if (court == null)
             {
                 return NotFound();
             }
-            return View(court);
+            return View(item);
         }
 
         // POST: Courts/Edit/5
@@ -177,20 +121,9 @@ namespace CoreApp.Controllers
             if (ModelState.IsValid)
             {
                 try
-                {
-                    var calendars = calendarservice.CalendarList.List().Execute().Items;
-                    Calendar update = new Calendar();
-                    update.Summary = court.Summary;
-                    update.Description = court.Description;
-                    update.Location = court.Location;
-                    update.Id = id;
-                    calendarservice.Calendars.Patch(update, id).Execute();
-
-
-                    _context.Update(court);
-                    await _context.SaveChangesAsync();
-                    
-
+                {                    
+                    Calendar update = _mapper.Map<Calendar>(court);
+                    api.EditCalendar(id,update);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -209,6 +142,7 @@ namespace CoreApp.Controllers
         }
 
         // GET: Courts/Delete/5
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> Delete(string id)
         {
             if (id == null)
@@ -216,14 +150,14 @@ namespace CoreApp.Controllers
                 return NotFound();
             }
 
-            var court = await _context.Court
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var court = api.GetCalendarById(id);
+            var item = _mapper.Map<Court>(court);
             if (court == null)
             {
                 return NotFound();
             }
 
-            return View(court);
+            return View(item);
         }
 
         // POST: Courts/Delete/5
@@ -231,18 +165,8 @@ namespace CoreApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
-            var court = await _context.Court.FindAsync(id);
-            _context.Court.Remove(court);
-            await _context.SaveChangesAsync();
-            var calendars = calendarservice.CalendarList.List().Execute().Items;
-            var deletedcalendar = calendars.Where(c => c.Id == court.Id).FirstOrDefault();
-            calendarservice.CalendarList.Delete(deletedcalendar.Id).Execute();
+            api.DeleteCalendar(id);
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool CourtExists(string id)
-        {
-            return _context.Court.Any(e => e.Id == id);
         }
     }
 }

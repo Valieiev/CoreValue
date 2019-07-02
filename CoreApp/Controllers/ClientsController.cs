@@ -33,7 +33,7 @@ namespace CoreApp.Controllers
         // POST: Clients/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<Clients>> Create(Clients item)
+        public async Task<ActionResult<Client>> Create(Client item)
         {
             try
             {
@@ -67,7 +67,7 @@ namespace CoreApp.Controllers
         // POST: Clients/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Clients item)
+        public async Task<IActionResult> Edit(int id, Client item)
         {
             if (id != item.Id)
             {
@@ -102,7 +102,7 @@ namespace CoreApp.Controllers
         // POST: Clients/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(int id, Clients item)
+        public async Task<IActionResult> Delete(int id, Client item)
         {
             if (id != item.Id)
             {
