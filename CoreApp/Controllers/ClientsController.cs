@@ -35,16 +35,15 @@ namespace CoreApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult<Client>> Create(Client item)
         {
-            try
+            if (ModelState.IsValid)
             {
                 _context.Clients.Add(item);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            catch
-            {
-                return View();
-            }
+            else
+                return View(item);
+
         }
 
         // GET: Clients/Edit/5
@@ -69,22 +68,27 @@ namespace CoreApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Client item)
         {
-            if (id != item.Id)
+            if (ModelState.IsValid)
             {
-                return BadRequest();
+                if (id != item.Id)
+                {
+                    return BadRequest();
+                }
+
+                try
+                {
+                    _context.Entry(item).State = EntityState.Modified;
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                catch
+                {
+                    return View();
+                }
             }
 
-            try
             {
-                // TODO: Add update logic here
-
-                _context.Entry(item).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
+                return View(item);
             }
         }
 

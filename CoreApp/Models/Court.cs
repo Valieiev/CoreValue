@@ -13,8 +13,12 @@ namespace CoreApp.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public string Id { get; set; }
+        [Required]
+        [RegularExpression(@"[а-яА-Яa-zA-Z0-9]{2,50}", ErrorMessage = "Only letters or numbers allowed")]
         public string Summary { get; set; }
+        [Required]
         public string Location { get; set; }
+        [RegularExpression(@"[а-яА-Яa-zA-Z0-9\s]{1,255}", ErrorMessage = "No more than 255")]
         public string Description { get; set; }
     }
 }

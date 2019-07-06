@@ -65,17 +65,34 @@ namespace CoreApp.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create(EventCalendar item)
         {
-            try
+            if (ModelState.IsValid)
             {
-                var calendarevent = _mapper.Map<Event>(item);
-                api.CreateEvent(calendarevent, _calendarId);
+                try
+                {
+                    var calendarevent = _mapper.Map<Event>(item);
+                    api.CreateEvent(calendarevent, _calendarId);
 
-                return RedirectToAction(nameof(Index));
+                    return RedirectToAction(nameof(Index));
+                }
+                catch
+                {
+
+                    return null;
+                }
             }
-            catch
+            else
+
             {
-                return null;
+                List<Client> clients = _context.Clients.ToList();
+                ViewBag.Clients = clients.Select(s => new SelectListItem
+                    {
+                        Text = $"{s.Name} {s.Surname} : {s.PhoneNumber}",
+                        Value = $"{s.Name} {s.Surname} : {s.PhoneNumber}"
+                    }
+                ).ToList();
+                return View(item);
             }
+            
         }
 
         // GET: Events/Delete/5

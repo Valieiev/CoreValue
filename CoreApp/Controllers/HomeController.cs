@@ -15,6 +15,9 @@ namespace CoreApp.Controllers
         private readonly IMapper _mapper;
         CalendarAPI api = new CalendarAPI();
         public Dictionary<string, string> courts = new Dictionary<string, string>();
+
+    
+
         public HomeController(IMapper mapper)
         {
             _mapper = mapper;
@@ -33,7 +36,12 @@ namespace CoreApp.Controllers
 
         }
 
-        public IActionResult Index(string calendarid, string userinfo)
+        public IActionResult Index()
+        {
+            return View();
+        }
+
+        public IActionResult ShowBookings(string calendarid, string userinfo)
         {
             ViewBag.calendars = courts;
             IList<Event> events = new List<Event>();
@@ -51,11 +59,6 @@ namespace CoreApp.Controllers
             }
 
             return View(model);
-        }
-
-        public IActionResult Privacy()
-        {
-            return View();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

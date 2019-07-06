@@ -10,12 +10,24 @@ namespace CoreApp.Models
 {
     public class EventCalendar
     {
+       
         public  string Id { get; set; }
+
+        [Required]
+        [RegularExpression(@"[а-яА-Яa-zA-Z0-9]{2,50}", ErrorMessage = "Only letters or numbers allowed")]
         public string Summary { get; set; }
+
+        [Required]
         public string Location { get; set; }
+
+        [Required]
         public string Description { get; set; }
+
+        [Required]
         public EventDateTime Start { get; set; }
+        [Required]
         public EventDateTime End { get; set; }
+
         public EventAttendee[] Attendees { get; set; }
         public Event.RemindersData Reminders { get; set; }
         public string Transparency { get; set; }

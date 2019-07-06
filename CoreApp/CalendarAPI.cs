@@ -15,7 +15,9 @@ namespace CoreApp
     {
         public IList<CalendarListEntry> GetCalendars()
         {
-            return (Startup.calendarservice.CalendarList.List().Execute().Items);
+            var items = Startup.calendarservice.CalendarList.List().Execute().Items;
+            items.RemoveAt(0);
+            return (items);
         }
 
         public Calendar GetCalendarById(string Id)

@@ -1,0 +1,55 @@
+﻿@model IEnumerable<CoreApp.Models.EventCalendar>
+@{
+    ViewData["Title"] = "Search Your Bookings";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome to court booking site.</h1>
+    <h1>  ↓ Search Your Bookings ↓</h1>
+    <form method="get">
+        <div>
+            @Html.DropDownList("calendarid", new SelectList(ViewBag.calendars, "Key", "Value", "ME"), "- Please select court -", new { @class = "form-control" })
+
+        </div>
+        <div>
+            @Html.TextBox("userinfo", "- Please enter your phonenumber/surname -", new { @class = "form-control" })
+
+        </div>
+        <input type="submit" value="Фильтр" class="btn btn-success" />
+
+    </form>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Location)
+            </th>
+            <th>
+                Start Date Time
+            </th>
+            <th>
+                End Date Time
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+
+                <td>
+                    @Html.DisplayFor(modelItem => item.Location)
+                </td>
+
+                <td>
+                    @Html.DisplayFor(modelItem => item.Start.DateTime)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.End.DateTime)
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
