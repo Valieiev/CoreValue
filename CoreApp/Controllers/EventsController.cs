@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using CoreApp.Data;
+using CoreApp.GoogleAPI;
 using CoreApp.Models;
+using Google.Apis.Calendar.v3;
 using Google.Apis.Calendar.v3.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -19,14 +21,14 @@ namespace CoreApp.Controllers
         private readonly IMapper _mapper;
         private readonly ApplicationDbContext _context;
 
-        CalendarAPI api = new CalendarAPI();
+        private readonly ICalendarAPI _api;
         private static string _calendarId;
 
-        public EventsController(IMapper mapper, ApplicationDbContext context)
+        public EventsController(IMapper mapper, ApplicationDbContext context, ICalendarAPI api)
         {
             _mapper = mapper;
             _context = context;
-
+            _api  = api;
         }
         // GET: Events
         public async Task<IActionResult> Index(string id)
@@ -34,9 +36,10 @@ namespace CoreApp.Controllers
             
             if (String.IsNullOrEmpty(id)) id = _calendarId;
             else _calendarId = id;
-                var list = api.GetEvents(id);
+                var list = await  _api.GetEvents(id);
+
                 var model = _mapper.Map<IList<EventCalendar>>(list);
-            ViewData["Title"] = api.GetCalendarById(id).Summary;
+            ViewData["Title"] =  _api.GetCalendarById(id).Result.Summary;
                 return View(model);
 
         }
@@ -70,7 +73,7 @@ namespace CoreApp.Controllers
                 try
                 {
                     var calendarevent = _mapper.Map<Event>(item);
-                    api.CreateEvent(calendarevent, _calendarId);
+                    _api.CreateEvent(calendarevent, _calendarId);
 
                     return RedirectToAction(nameof(Index));
                 }
@@ -98,7 +101,7 @@ namespace CoreApp.Controllers
         // GET: Events/Delete/5
         public ActionResult DeleteShow(string id)
         {
-            var item  = api.GetEventById(_calendarId,id);
+            var item  = _api.GetEventById(_calendarId,id);
             var model = _mapper.Map<EventCalendar>(item);
             return View(model);
         }
@@ -110,7 +113,7 @@ namespace CoreApp.Controllers
         {
             try
             {
-                api.DeleteEvent(_calendarId,id);
+                _api.DeleteEvent(_calendarId,id);
 
                 return RedirectToAction(nameof(Index));
             }

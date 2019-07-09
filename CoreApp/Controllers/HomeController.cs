@@ -4,8 +4,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using CoreApp.GoogleAPI;
 using Microsoft.AspNetCore.Mvc;
 using CoreApp.Models;
+using Google.Apis.Calendar.v3;
 using Google.Apis.Calendar.v3.Data;
 
 namespace CoreApp.Controllers
@@ -13,26 +15,22 @@ namespace CoreApp.Controllers
     public class HomeController : Controller
     {
         private readonly IMapper _mapper;
-        CalendarAPI api = new CalendarAPI();
+        private readonly ICalendarAPI _api;
         public Dictionary<string, string> courts = new Dictionary<string, string>();
 
     
 
-        public HomeController(IMapper mapper)
+        public HomeController(IMapper mapper, ICalendarAPI api)
         {
             _mapper = mapper;
-            try
-            {
-                var calendars = api.GetCalendars();
+            _api = api;
 
+            var calendars = _api.GetCalendars();
 
-
-                for (int i = 0; i < calendars.Count; i++)
+                for (int i = 0; i < calendars.Result.Count; i++)
                 {
-                    courts.Add(calendars[i].Id, calendars[i].Summary);
+                    courts.Add(calendars.Result[i].Id, calendars.Result[i].Summary);
                 }
-            }
-            catch{        }  ;
 
         }
 
@@ -41,20 +39,20 @@ namespace CoreApp.Controllers
             return View();
         }
 
-        public IActionResult ShowBookings(string calendarid, string userinfo)
+        public async Task<IActionResult> ShowBookings(string calendarid, string userinfo)
         {
             ViewBag.calendars = courts;
             IList<Event> events = new List<Event>();
             IList<EventCalendar> model = new List<EventCalendar>();
             if (!String.IsNullOrEmpty(calendarid))
             {
-                events = api.GetEvents(calendarid);
+                events = await _api.GetEvents(calendarid);
                 model = _mapper.Map<IList<EventCalendar>>(events);
             }
 
             if (!String.IsNullOrEmpty(userinfo))
             {
-                events = api.GetEvents(calendarid).Where(c => c.Description.Contains(userinfo)).ToList();
+                events =  _api.GetEvents(calendarid).Result.Where(c => c.Description.Contains(userinfo)).ToList();
                 model = _mapper.Map<IList<EventCalendar>>(events);
             }
 

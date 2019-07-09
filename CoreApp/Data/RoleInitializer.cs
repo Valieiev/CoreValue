@@ -8,6 +8,7 @@ namespace CoreApp
 {
     public class RoleInitializer
     {
+
         public static async Task InitializeAsync(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
         {
             string adminEmail = "admin@gmail.com";

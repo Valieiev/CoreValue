@@ -12,6 +12,7 @@ using CoreApp.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using AutoMapper;
+using CoreApp.GoogleAPI;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Calendar.v3;
 using Google.Apis.Services;
@@ -61,14 +62,20 @@ namespace CoreApp
                 mc.AddProfile(new MappingProfile());
             });
 
+            //Add DI mapper
             IMapper mapper = mappingConfig.CreateMapper();
             services.AddSingleton(mapper);
+            //Add DI CalendarAPI
+            services.AddSingleton(calendarservice);
+            services.AddTransient<ICalendarAPI, CalendarAPI>();
+            
 
             services.AddMvc();
 
+
             services.Configure<CookiePolicyOptions>(options =>
             {
-                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
+              // This lambda determines whether user consent for non-essential cookies is needed for a given request.
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
@@ -119,7 +126,7 @@ namespace CoreApp
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IServiceProvider services)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IServiceProvider services, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, ICalendarAPI calendarApi)
         {
             
             if (env.IsDevelopment())
@@ -140,6 +147,7 @@ namespace CoreApp
             app.UseCookiePolicy();
             
             app.UseAuthentication();
+            RoleInitializer.InitializeAsync(userManager,roleManager).Wait();
 
             app.UseMvc(routes =>
             {

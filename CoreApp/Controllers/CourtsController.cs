@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CoreApp.Data;
+using CoreApp.GoogleAPI;
 using CoreApp.Models;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Calendar.v3;
@@ -26,20 +27,20 @@ namespace CoreApp.Controllers
 
         private readonly IMapper _mapper;
 
-        CalendarAPI api = new CalendarAPI();
+        private readonly ICalendarAPI _api;
 
-        public CourtsController( IMapper mapper)
+        public CourtsController( IMapper mapper, ICalendarAPI api)
         {
             _mapper = mapper;
-
+            _api = api;
         }
 
         // GET: Courts
         public async Task<IActionResult> Index()
         {
-            var list = api.GetCalendars();
-            var model = _mapper.Map<IList<Court>>(list);
-            return View(model);
+            var list = await _api.GetCalendars();
+            var model =  _mapper.Map<IList<Court>>(list);
+             return View( model);
         }
 
         // GET: Courts/Details/5
@@ -51,7 +52,7 @@ namespace CoreApp.Controllers
                 return NotFound();
             }
 
-            var court = api.GetCalendarById(id);
+            var court = await _api.GetCalendarById(id);
             var item = _mapper.Map<Court>(court);
             if (court == null)
             {
@@ -74,13 +75,13 @@ namespace CoreApp.Controllers
         
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Summary,Location,Description")] Court court)
+        public IActionResult Create([Bind("Id,Summary,Location,Description")] Court court)
         {
             if (ModelState.IsValid)
             {
 
                 Calendar cal = _mapper.Map<Calendar>(court);
-                api.CreateCalendar(cal);
+                 _api.CreateCalendar(cal);
 
                 return RedirectToAction(nameof(Index));
             }
@@ -96,7 +97,7 @@ namespace CoreApp.Controllers
                 return NotFound();
             }
 
-            var court = api.GetCalendarById(id);
+            var court = await _api.GetCalendarById(id);
             var item = _mapper.Map<Court>(court);
 
             if (court == null)
@@ -111,7 +112,7 @@ namespace CoreApp.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("Id,Summary,Location,Description")] Court court)
+        public  IActionResult Edit(string id, [Bind("Id,Summary,Location,Description")] Court court)
         {
             if (id != court.Id)
             {
@@ -123,7 +124,7 @@ namespace CoreApp.Controllers
                 try
                 {                    
                     Calendar update = _mapper.Map<Calendar>(court);
-                    api.EditCalendar(id,update);
+                     _api.EditCalendar(id,update);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -150,7 +151,7 @@ namespace CoreApp.Controllers
                 return NotFound();
             }
 
-            var court = api.GetCalendarById(id);
+            var court = await _api.GetCalendarById(id);
             var item = _mapper.Map<Court>(court);
             if (court == null)
             {
@@ -163,9 +164,9 @@ namespace CoreApp.Controllers
         // POST: Courts/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(string id)
+        public IActionResult DeleteConfirmed(string id)
         {
-            api.DeleteCalendar(id);
+            _api.DeleteCalendar(id);
             return RedirectToAction(nameof(Index));
         }
     }

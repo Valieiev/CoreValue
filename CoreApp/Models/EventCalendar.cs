@@ -14,7 +14,7 @@ namespace CoreApp.Models
         public  string Id { get; set; }
 
         [Required]
-        [RegularExpression(@"[а-яА-Яa-zA-Z0-9]{2,50}", ErrorMessage = "Only letters or numbers allowed")]
+        [RegularExpression(@"[а-яА-Яa-zA-Z0-9\s]{2,50}", ErrorMessage = "Only letters or numbers allowed")]
         public string Summary { get; set; }
 
         [Required]
