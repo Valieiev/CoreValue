@@ -23,15 +23,23 @@ namespace CoreApp
     public class Startup
     {
         static string[] Scopes = { CalendarService.Scope.Calendar };
-        public static UserCredential credential;
-        public static CalendarService calendarservice;
+   
 
 
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            using (var stream =
-                new FileStream("client_secret_new.json", FileMode.Open, FileAccess.Read))
+            
+        }
+
+        public IConfiguration Configuration { get; }
+
+        // This method gets called by the runtime. Use this method to add services to the container.
+        public void ConfigureServices(IServiceCollection services)
+        {
+
+            UserCredential credential;
+            using (var stream = new FileStream("client_secret_new.json", FileMode.Open, FileAccess.Read))
             {
                 // The file token.json stores the user's access and refresh tokens, and is created
                 // automatically when the authorization flow completes for the first time.
@@ -43,32 +51,26 @@ namespace CoreApp
                     CancellationToken.None,
                     new FileDataStore(credPath, true)).Result;
             }
-            calendarservice = new CalendarService(new BaseClientService.Initializer
+            CalendarService calendarservice = new CalendarService(new BaseClientService.Initializer
             {
                 HttpClientInitializer = credential,
                 ApplicationName = "Discovery Sample",
                 ApiKey = "AIzaSyC2i4IHvczd-5UbhZ4g3DEa-RQrCb126yk",
             });
-        }
 
-        public IConfiguration Configuration { get; }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
-        {
+            //Add DI CalendarAPI
+            services.AddSingleton(calendarservice);
+            services.AddTransient<ICalendarAPI, CalendarAPI>();
 
             var mappingConfig = new MapperConfiguration(mc =>
             {
                 mc.AddProfile(new MappingProfile());
             });
-
             //Add DI mapper
             IMapper mapper = mappingConfig.CreateMapper();
             services.AddSingleton(mapper);
-            //Add DI CalendarAPI
-            services.AddSingleton(calendarservice);
-            services.AddTransient<ICalendarAPI, CalendarAPI>();
-            
+
+
 
             services.AddMvc();
 
