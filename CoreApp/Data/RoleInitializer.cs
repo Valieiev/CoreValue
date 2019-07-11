@@ -12,6 +12,7 @@ namespace CoreApp
         public static async Task InitializeAsync(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
         {
             string adminEmail = "admin@gmail.com";
+            string managerEmail = "admin@gmail.com";
             string password = "Aa_12345";
             if (await roleManager.FindByNameAsync("admin") == null)
             {
@@ -28,6 +29,15 @@ namespace CoreApp
                 if (result.Succeeded)
                 {
                     await userManager.AddToRoleAsync(admin, "admin");
+                }
+            }
+            if (await userManager.FindByNameAsync(managerEmail) == null)
+            {
+                IdentityUser manager = new IdentityUser { Email = managerEmail, UserName = managerEmail };
+                IdentityResult result = await userManager.CreateAsync(manager, password);
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(manager, "manager");
                 }
             }
         }
