@@ -1,5 +1,8 @@
 # CoreValue
 
+
+Before starting the project execute this command in package console: update-database
+
 For connection with your Calendar read:  https://developers.google.com/api-client-library/dotnet/guide/aaa_overview
 
 Login address: ../Identity/Account/Login
