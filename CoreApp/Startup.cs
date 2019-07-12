@@ -23,13 +23,14 @@ namespace CoreApp
     public class Startup
     {
         static string[] Scopes = { CalendarService.Scope.Calendar };
-   
+        public  static string _contentRootPath = "";
 
 
-        public Startup(IConfiguration configuration)
+
+        public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
             Configuration = configuration;
-            
+            _contentRootPath = env.ContentRootPath;
         }
 
         public IConfiguration Configuration { get; }
@@ -37,7 +38,12 @@ namespace CoreApp
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
+            string conn = Configuration.GetConnectionString("DefaultConnection");
+            if (conn.Contains("%CONTENTROOTPATH%"))
+            {
+                conn = conn.Replace("%CONTENTROOTPATH%", _contentRootPath+ "\\DB\\aspnet-CoreApp.mdf");
+            }
+            
             UserCredential credential;
             using (var stream = new FileStream("client_secret_new.json", FileMode.Open, FileAccess.Read))
             {
@@ -83,8 +89,7 @@ namespace CoreApp
             });
        
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(
-                    Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(conn));
             services.AddIdentity<IdentityUser, IdentityRole>()
                 .AddDefaultUI(UIFramework.Bootstrap4)
                 .AddEntityFrameworkStores<ApplicationDbContext>()
