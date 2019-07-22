@@ -44,6 +44,11 @@ namespace CoreApp.Controllers
             ViewBag.calendars = courts;
             IList<Event> events = new List<Event>();
             IList<EventCalendar> model = new List<EventCalendar>();
+            if (calendarid == "- Please select court -" || userinfo == "- Please enter your phonenumber/surname -")
+            {
+                return View(model);
+            }
+
             if (!String.IsNullOrEmpty(calendarid))
             {
                 events = await _api.GetEvents(calendarid);

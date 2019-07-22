@@ -60,7 +60,10 @@ namespace CoreApp.Controllers
                 Value = $"{s.Name} {s.Surname} : {s.PhoneNumber}"
             }
             ).ToList();
-            return View();
+            var item = new EventCalendar();
+            var calendar = _api.GetCalendarById(_calendarId);
+            item.Location = calendar.Result.Location;
+            return View(item);
         }
 
         // POST: Events/Create

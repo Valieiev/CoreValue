@@ -14,10 +14,12 @@ namespace CoreApp.Controllers
     {
         RoleManager<IdentityRole> _roleManager;
         UserManager<IdentityUser> _userManager;
-        public AdminController(RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager)
+        private readonly SignInManager<IdentityUser> _signInManager;
+        public AdminController(RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
         {
             _roleManager = roleManager;
             _userManager = userManager;
+            _signInManager = signInManager;
         }
         public IActionResult Index() => View(_roleManager.Roles.ToList());
 
@@ -76,6 +78,10 @@ namespace CoreApp.Controllers
                 await _userManager.AddToRolesAsync(user, addedRoles);
 
                 await _userManager.RemoveFromRolesAsync(user, removedRoles);
+
+                await _userManager.UpdateSecurityStampAsync(user);
+
+                await _signInManager.RefreshSignInAsync(user);
 
                 return RedirectToAction("UserList");
             }

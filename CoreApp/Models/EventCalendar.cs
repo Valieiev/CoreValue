@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
 using Google.Apis.Calendar.v3.Data;
 
 namespace CoreApp.Models
@@ -21,11 +18,15 @@ namespace CoreApp.Models
         public string Location { get; set; }
 
         [Required]
+        [DisplayName("Client")]
         public string Description { get; set; }
 
         [Required]
+        [DisplayName("Date Start")]
         public EventDateTime Start { get; set; }
         [Required]
+        [DisplayName("Date End")]
+        [CompareDate("Start", ErrorMessage = "End date must be more than Start date")]
         public EventDateTime End { get; set; }
 
         public EventAttendee[] Attendees { get; set; }
@@ -49,5 +50,32 @@ namespace CoreApp.Models
             Transparency = "opaque";
         }
     }
+
     
+    public class CompareDateAttribute : CompareAttribute
+    {
+        public CompareDateAttribute(string otherProperty)
+            : base(otherProperty) { }
+
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        {
+            try
+            {
+                var validationitem = (EventDateTime) value;
+                var property = validationitem.DateTime;
+                var anothervalidationitem = (EventDateTime)validationContext.ObjectType.GetProperty(OtherProperty).GetValue(validationContext.ObjectInstance, null);
+                var anotherProp = anothervalidationitem.DateTime;
+
+                if (anotherProp < property)
+                    return ValidationResult.Success;
+            }
+            catch (NullReferenceException)
+            {
+                ErrorMessage = "Convert Error";
+            }
+
+            return new ValidationResult(ErrorMessage);
+        }
+    }
+
 }

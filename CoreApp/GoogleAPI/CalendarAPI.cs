@@ -34,10 +34,10 @@ namespace CoreApp
             return await  (_calendarService.Calendars.Get(Id).ExecuteAsync());
         }
 
-        public async void CreateCalendar( Calendar cal)
+        public void CreateCalendar( Calendar cal)
         {
             CalendarsResource.InsertRequest addCalendar = _calendarService.Calendars.Insert(cal);
-            await addCalendar.ExecuteAsync();
+             addCalendar.Execute();
         }
 
         public async void EditCalendar(string id, Calendar cal)
@@ -50,9 +50,9 @@ namespace CoreApp
             await _calendarService.Calendars.Delete(id).ExecuteAsync();
         }
 
-        public async void CreateEvent(Event item,string calendarId)
+        public  void CreateEvent(Event item,string calendarId)
         {
-            await _calendarService.Events.Insert(item, calendarId).ExecuteAsync();
+             _calendarService.Events.Insert(item, calendarId).Execute();
         }
 
         public async Task<IList<Event>> GetEvents( string calendarId)
