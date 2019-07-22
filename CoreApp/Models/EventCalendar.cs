@@ -36,7 +36,7 @@ namespace CoreApp.Models
         {
             Start = new EventDateTime() {TimeZone = "Europe/Kiev"};
             End = new EventDateTime() { TimeZone = "Europe/Kiev" };
-            Attendees = new EventAttendee[] {new EventAttendee() {Email = "waynelaren@gmail.com"}};
+            Attendees = new EventAttendee[] {new EventAttendee() {Email = "corecourtbooking@gmail.com" } };
             Reminders = new Event.RemindersData()
             {
                 UseDefault = false,

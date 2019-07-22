@@ -38,12 +38,13 @@ namespace CoreApp
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            string conn = Configuration.GetConnectionString("DefaultConnection");
-            if (conn.Contains("%CONTENTROOTPATH%"))
-            {
-                conn = conn.Replace("%CONTENTROOTPATH%", _contentRootPath+ "\\DB\\aspnet-CoreApp.mdf");
-            }
-            
+            // We change %CONTENTROOTPATH% on the path to the directory
+                string conn = Configuration.GetConnectionString("DefaultConnection");
+                if (conn.Contains("%CONTENTROOTPATH%"))
+                {
+                    conn = conn.Replace("%CONTENTROOTPATH%", _contentRootPath+ "\\DB\\aspnet-CoreApp.mdf");
+                }
+            //______
             UserCredential credential;
             using (var stream = new FileStream("client_secret_new.json", FileMode.Open, FileAccess.Read))
             {
